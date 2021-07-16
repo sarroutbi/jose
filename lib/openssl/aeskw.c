@@ -42,9 +42,11 @@ jwk_prep_handles(jose_cfg_t *cfg, const json_t *jwk)
 {
     const char *alg = NULL;
 
-    if (json_unpack((json_t *) jwk, "{s:s}", "alg", &alg) == -1)
+    if (json_unpack((json_t *) jwk, "{s:s}", "alg", &alg) == -1) {
+        fprintf(stderr, "%s:%d -> %s \n", __FILE__, __LINE__, __FUNCTION__);        
         return false;
-
+    }
+    fprintf(stderr, "%s:%d -> %s \n", __FILE__, __LINE__, __FUNCTION__);
     return alg2len(alg) != 0;
 }
 
