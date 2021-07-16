@@ -59,15 +59,21 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
     const char *kty = NULL;
     const char *use = NULL;
 
-    if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_PREP))
+    if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_PREP)) {
+        fprintf(stderr, "JOSE_HOOK_JWK_KIND_PREP failed!");
         return false;
+    }
 
-    if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_MAKE))
+    if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_MAKE)) {
+        fprintf(stderr, "JOSE_HOOK_JWK_KIND_MAKE failed!");
         return false;
+    }
 
     if (json_unpack(jwk, "{s?s,s:s,s?s,s?o}",
-                    "alg", &alg, "kty", &kty, "use", &use, "key_ops", &ko) < 0)
+                    "alg", &alg, "kty", &kty, "use", &use, "key_ops", &ko) < 0) {
+        fprintf(stderr, "json_unpack failed!");
         return false;
+    }
 
     for (const jose_hook_alg_t *a = jose_hook_alg_list();
          a && alg && !use && !ko; a = a->next) {
@@ -77,39 +83,57 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
             continue;
 
         ops = json_array();
-        if (!ops)
+        if (!ops) {
+            fprintf(stderr, "No ops!");
             return false;
+        }
 
         switch (a->kind) {
         case JOSE_HOOK_ALG_KIND_SIGN:
-            if (json_array_append_new(ops, json_string("sign")) < 0)
+            if (json_array_append_new(ops, json_string("sign")) < 0) {
+                fprintf(stderr, "json_array_append_new sign failed!");
                 return false;
-            if (json_array_append_new(ops, json_string("verify")) < 0)
+            }
+            if (json_array_append_new(ops, json_string("verify")) < 0) {
+                fprintf(stderr, "json_array_append_new verify failed!");
                 return false;
+            }
             break;
         case JOSE_HOOK_ALG_KIND_WRAP:
-            if (json_array_append_new(ops, json_string("wrapKey")) < 0)
+            if (json_array_append_new(ops, json_string("wrapKey")) < 0) {
+                fprintf(stderr, "json_array_append_new wrapKey failed!");
                 return false;
-            if (json_array_append_new(ops, json_string("unwrapKey")) < 0)
+            }
+            if (json_array_append_new(ops, json_string("unwrapKey")) < 0) {
+                fprintf(stderr, "json_array_append_new unwrapKey failed!");
                 return false;
+            }
             break;
         case JOSE_HOOK_ALG_KIND_ENCR:
-            if (json_array_append_new(ops, json_string("encrypt")) < 0)
+            if (json_array_append_new(ops, json_string("encrypt")) < 0) {
+                fprintf(stderr, "json_array_append_new encrypt failed!");
                 return false;
-            if (json_array_append_new(ops, json_string("decrypt")) < 0)
+            }
+            if (json_array_append_new(ops, json_string("decrypt")) < 0) {
+                fprintf(stderr, "json_array_append_new decrypt failed!");
                 return false;
+            }
             break;
         case JOSE_HOOK_ALG_KIND_EXCH:
-            if (json_array_append_new(ops, json_string("deriveKey")) < 0)
+            if (json_array_append_new(ops, json_string("deriveKey")) < 0) {
+                fprintf(stderr, "json_array_append_new deriveKey failed!");
                 return false;
+            }
             break;
         default:
             break;
         }
 
         if (json_array_size(ops) > 0 &&
-            json_object_set(jwk, "key_ops", ops) < 0)
+            json_object_set(jwk, "key_ops json_array_size", ops) < 0) {
+            fprintf(stderr, "key_ops json_array_size failed!");
             return false;
+        }
 
         break;
     }
@@ -120,14 +144,15 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
 
         if (strcmp(j->type.kty, kty) == 0) {
             for (size_t i = 0; j->type.req[i]; i++) {
-                if (!json_object_get(jwk, j->type.req[i]))
+                if (!json_object_get(jwk, j->type.req[i])) {
+                    fprintf(stderr, "json_objet_get failed!");
                     return false;
+                }
             }
-
             return true;
         }
     }
-
+    fprintf(stderr, "false by default!");
     return false;
 }
 
