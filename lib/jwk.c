@@ -47,6 +47,8 @@ jwk_hook(jose_cfg_t *cfg, json_t *jwk, jose_hook_jwk_kind_t kind)
                     fprintf(stderr, "!jm->make execute\n");
                 }
                 return jm;
+            } else {
+                fprintf(stderr, "!j->make does not handle\n");
             }
             break;
 
@@ -69,11 +71,13 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
     const char *kty = NULL;
     const char *use = NULL;
 
+    fprintf(stderr, "PREPING ...\n");
     if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_PREP)) {
         fprintf(stderr, "JOSE_HOOK_JWK_KIND_PREP failed!\n");
         return false;
     }
 
+    fprintf(stderr, "MAKING ...\n");
     if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_MAKE)) {
         fprintf(stderr, "JOSE_HOOK_JWK_KIND_MAKE failed!\n");
         return false;
