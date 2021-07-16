@@ -34,20 +34,29 @@ jwk_hook(jose_cfg_t *cfg, json_t *jwk, jose_hook_jwk_kind_t kind)
 
         switch (kind) {
         case JOSE_HOOK_JWK_KIND_PREP:
-            if (j->prep.handles(cfg, jwk) && !j->prep.execute(cfg, jwk))
+            if (j->prep.handles(cfg, jwk) && !j->prep.execute(cfg, jwk)) {
+                fprintf(stderr, "!prep handles");
                 return false;
+            }
             break;
 
         case JOSE_HOOK_JWK_KIND_MAKE:
-            if (j->make.handles(cfg, jwk))
-                return j->make.execute(cfg, jwk);
+            if (j->make.handles(cfg, jwk)) {
+                bool jm = j->make.execute(cfg, jwk);
+                if(!j) {
+                    fprintf(stderr, "!jm->make execute");
+                }
+                return jm;
+            }
             break;
 
         default:
             continue;
         }
     }
-
+    if(JOSE_HOOK_JWK_KIND_PREP != kind) {
+        fprintf(stderr, "Unexpected kind");
+    }
     return kind == JOSE_HOOK_JWK_KIND_PREP;
 }
 
