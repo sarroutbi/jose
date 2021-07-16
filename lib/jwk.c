@@ -46,6 +46,7 @@ jwk_hook(jose_cfg_t *cfg, json_t *jwk, jose_hook_jwk_kind_t kind)
                 if(!j) {
                     fprintf(stderr, "!jm->make execute\n");
                 }
+                fprintf(stderr, "j->make handled!!!\n");
                 return jm;
             } else {
                 fprintf(stderr, "!j->make does not handle\n");
