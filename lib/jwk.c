@@ -35,7 +35,7 @@ jwk_hook(jose_cfg_t *cfg, json_t *jwk, jose_hook_jwk_kind_t kind)
         switch (kind) {
         case JOSE_HOOK_JWK_KIND_PREP:
             if (j->prep.handles(cfg, jwk) && !j->prep.execute(cfg, jwk)) {
-                fprintf(stderr, "!prep handles");
+                fprintf(stderr, "!prep handles\n");
                 return false;
             }
             break;
@@ -44,7 +44,7 @@ jwk_hook(jose_cfg_t *cfg, json_t *jwk, jose_hook_jwk_kind_t kind)
             if (j->make.handles(cfg, jwk)) {
                 bool jm = j->make.execute(cfg, jwk);
                 if(!j) {
-                    fprintf(stderr, "!jm->make execute");
+                    fprintf(stderr, "!jm->make execute\n");
                 }
                 return jm;
             }
@@ -55,7 +55,8 @@ jwk_hook(jose_cfg_t *cfg, json_t *jwk, jose_hook_jwk_kind_t kind)
         }
     }
     if(JOSE_HOOK_JWK_KIND_PREP != kind) {
-        fprintf(stderr, "Unexpected kind");
+        fprintf(stderr, "Unexpected kind\n");
+        fprintf(stderr, "Expected:(%u), got:(%u)\n", JOSE_HOOK_JWK_KIND_PREP, kind);
     }
     return kind == JOSE_HOOK_JWK_KIND_PREP;
 }
@@ -69,18 +70,18 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
     const char *use = NULL;
 
     if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_PREP)) {
-        fprintf(stderr, "JOSE_HOOK_JWK_KIND_PREP failed!");
+        fprintf(stderr, "JOSE_HOOK_JWK_KIND_PREP failed!\n");
         return false;
     }
 
     if (!jwk_hook(cfg, jwk, JOSE_HOOK_JWK_KIND_MAKE)) {
-        fprintf(stderr, "JOSE_HOOK_JWK_KIND_MAKE failed!");
+        fprintf(stderr, "JOSE_HOOK_JWK_KIND_MAKE failed!\n");
         return false;
     }
 
     if (json_unpack(jwk, "{s?s,s:s,s?s,s?o}",
                     "alg", &alg, "kty", &kty, "use", &use, "key_ops", &ko) < 0) {
-        fprintf(stderr, "json_unpack failed!");
+        fprintf(stderr, "json_unpack failed!\n");
         return false;
     }
 
@@ -93,44 +94,44 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
 
         ops = json_array();
         if (!ops) {
-            fprintf(stderr, "No ops!");
+            fprintf(stderr, "No ops!\n");
             return false;
         }
 
         switch (a->kind) {
         case JOSE_HOOK_ALG_KIND_SIGN:
             if (json_array_append_new(ops, json_string("sign")) < 0) {
-                fprintf(stderr, "json_array_append_new sign failed!");
+                fprintf(stderr, "json_array_append_new sign failed!\n");
                 return false;
             }
             if (json_array_append_new(ops, json_string("verify")) < 0) {
-                fprintf(stderr, "json_array_append_new verify failed!");
+                fprintf(stderr, "json_array_append_new verify failed!\n");
                 return false;
             }
             break;
         case JOSE_HOOK_ALG_KIND_WRAP:
             if (json_array_append_new(ops, json_string("wrapKey")) < 0) {
-                fprintf(stderr, "json_array_append_new wrapKey failed!");
+                fprintf(stderr, "json_array_append_new wrapKey failed!\n");
                 return false;
             }
             if (json_array_append_new(ops, json_string("unwrapKey")) < 0) {
-                fprintf(stderr, "json_array_append_new unwrapKey failed!");
+                fprintf(stderr, "json_array_append_new unwrapKey failed!\n");
                 return false;
             }
             break;
         case JOSE_HOOK_ALG_KIND_ENCR:
             if (json_array_append_new(ops, json_string("encrypt")) < 0) {
-                fprintf(stderr, "json_array_append_new encrypt failed!");
+                fprintf(stderr, "json_array_append_new encrypt failed!\n");
                 return false;
             }
             if (json_array_append_new(ops, json_string("decrypt")) < 0) {
-                fprintf(stderr, "json_array_append_new decrypt failed!");
+                fprintf(stderr, "json_array_append_new decrypt failed!\n");
                 return false;
             }
             break;
         case JOSE_HOOK_ALG_KIND_EXCH:
             if (json_array_append_new(ops, json_string("deriveKey")) < 0) {
-                fprintf(stderr, "json_array_append_new deriveKey failed!");
+                fprintf(stderr, "json_array_append_new deriveKey failed!\n");
                 return false;
             }
             break;
@@ -140,7 +141,7 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
 
         if (json_array_size(ops) > 0 &&
             json_object_set(jwk, "key_ops json_array_size", ops) < 0) {
-            fprintf(stderr, "key_ops json_array_size failed!");
+            fprintf(stderr, "key_ops json_array_size failed!\n");
             return false;
         }
 
@@ -154,7 +155,7 @@ jose_jwk_gen(jose_cfg_t *cfg, json_t *jwk)
         if (strcmp(j->type.kty, kty) == 0) {
             for (size_t i = 0; j->type.req[i]; i++) {
                 if (!json_object_get(jwk, j->type.req[i])) {
-                    fprintf(stderr, "json_objet_get failed!");
+                    fprintf(stderr, "json_objet_get failed!\n");
                     return false;
                 }
             }
